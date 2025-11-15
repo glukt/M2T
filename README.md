@@ -1,33 +1,30 @@
-# Morse Code Audio Processor
+# M2T: Morse Code Audio Processor
 
-##  overview
+## Overview
 
-This project is a self-contained, web-based Morse code toolkit built with Python and Flask. It provides a simple user interface to perform two primary functions:
+This project is a self-contained, web-based Morse code toolkit built with Python and Flask. The primary focus is to decode Morse code from `.wav` audio files into text in real-time.
 
-1.  **Text-to-Morse:** Convert any text string into a downloadable Morse code `.wav` audio file.
-2.  **Morse-to-Text:** Upload a `.wav` file containing Morse code and receive a live transcription of the audio.
-
-The entire application is designed to run locally on a private network, with all dependencies managed within a Python virtual environment.
+It also provides a secondary text-to-Morse generator which is useful for creating test audio files. The entire application is designed to run locally on a private network, with all dependencies managed within a Python virtual environment.
 
 ---
 
 ## 🧭 Core Features
 
-* **Text-to-Morse Generation:**
-    * Accepts user text input.
-    * Generates a clean Morse code audio signal at a standard WPM (Words Per Minute).
-    * Provides the generated `.wav` file for playback and download directly in the browser.
+*   **Audio-to-Text Transcription (Primary Feature):**
+    *   Accepts user `.wav` file uploads.
+    *   **Automatic Speed Detection:** Automatically estimates the transmission speed (Words Per Minute) from the audio signal and displays it.
+    *   **Live Transcription:** As the audio plays, decoded characters appear on the screen, synchronized with the playback.
+    *   **Full Summary:** A complete transcription of the entire message is populated at the bottom of the page.
+    *   **Signal Visualization:** Displays a simple waveform of the audio signal with a "playhead" that tracks the current playback position.
 
-* **Audio-to-Text Transcription:**
-    * Accepts user `.wav` file uploads.
-    * **Live Transcription:** As the audio plays, the decoded characters appear on the screen in real-time, synchronized with the audio playback.
-    * **Full Summary:** A complete transcription of the entire message is populated at the bottom of the page.
-    * **Signal Visualization:** Displays a simple waveform of the audio signal, with a "playhead" that tracks the current playback position.
+*   **Text-to-Morse Generation (Testing Tool):**
+    *   Housed in a collapsible section of the UI to keep the focus on decoding.
+    *   Accepts user text input to generate a clean Morse code `.wav` file for playback and download.
 
-* **Self-Contained & Private:**
-    * Runs entirely on a local Flask server.
-    * Requires no external internet access or third-party APIs for its core processing.
-    * Includes a setup script (`setup.py`) to automatically create a virtual environment and install all necessary dependencies.
+*   **Self-Contained & Private:**
+    *   Runs entirely on a local Flask server.
+    *   Requires no external internet access or third-party APIs for its core processing.
+    *   Includes a `setup.py` script to automate environment creation and dependency installation.
 
 ---
 
@@ -35,27 +32,40 @@ The entire application is designed to run locally on a private network, with all
 
 This project uses a simple client-server architecture.
 
-* **Backend (Server-Side):**
-    * **Framework:** **Flask** (a Python micro-framework) serves the web page, handles file uploads, and manages all API endpoints.
-    * **Audio Generation:** **Pydub** is used to create sine-wave-based audio segments for generating Morse code tones.
-    * **Audio Analysis:** **Librosa** and **Scipy** are used to load audio files, perform signal processing (band-pass filtering), and detect the signal envelope.
-    * **Core Logic:** A custom **NumPy**-based algorithm analyzes the "on" (mark) and "off" (space) durations to decode the binary signal into Morse elements (dots, dashes, spaces) and, finally, text.
+*   **Backend (Server-Side):**
+    *   **Framework:** **Flask** serves the web page, handles file uploads, and manages all API endpoints.
+    *   **Audio Generation:** **Pydub** creates sine-wave-based audio segments for generating Morse code tones.
+    *   **Audio Analysis:** **Librosa** and **Scipy** load audio files, perform signal processing, and detect the signal envelope.
+    *   **Core Logic:** A custom **NumPy**-based algorithm analyzes "on" (mark) and "off" (space) durations to decode the binary signal into Morse elements, calculate WPM, and translate to text.
 
-* **Frontend (Client-Side):**
-    * **HTML5:** Provides the structure for the two main interface panels.
-    * **CSS3:** Simple, clean styling for a user-friendly layout.
-    * **JavaScript (ES6+):**
-        * Uses the **Fetch API** to communicate with the Flask backend.
-        * Manages all UI interactivity (showing/hiding elements, handling button clicks).
-        * Uses the **Web Audio API** (`AudioContext`) to load and draw the waveform visualization onto an HTML **Canvas**.
-        * Synchronizes the audio `currentTime` with the transcription event timestamps to create the live-display effect.
+*   **Frontend (Client-Side):**
+    *   **HTML5/CSS3:** Provides a clean, single-column user interface with the decoder as the primary focus.
+    *   **JavaScript (ES6+):**
+        *   Uses the **Fetch API** to communicate with the Flask backend.
+        *   Manages all UI interactivity, including the collapsible generator section.
+        *   Uses the **Web Audio API** (`AudioContext`) to draw the waveform visualization onto an HTML **Canvas**.
+        *   Synchronizes the audio `currentTime` with transcription event timestamps to create the live-display effect.
 
 ---
 
 ## 📂 File Structure
 
-morse_app/ ├── app.py # Main Flask application (routes, file handling) ├── morse_processor.py # Core logic (text-to-morse, audio-to-text) ├── setup.py # Installation script (creates venv, installs deps) ├── requirements.txt # List of Python libraries ├── README.md # This project documentation file │ ├── static/ # Frontend assets │ ├── css/ │ │ └── style.css # All application styling │ └── js/ │ └── app.js # Frontend logic, API calls, visualization │ ├── templates/ # HTML templates │ └── index.html # The main (and only) web page │ ├── uploads/ # (Created by app) Stores user-uploaded .wav files ├── generated_audio/ # (Created by app) Stores text-to-morse .wav files └── venv/ # (Created by setup.py) Virtual environment
-
+```
+m2t/
+├── .gitignore             # Specifies files for Git to ignore
+├── app.py                 # Main Flask application (routes, file handling)
+├── morse_processor.py     # Core logic (audio-to-text, wpm calc, text-to-morse)
+├── README.md              # This project documentation file
+├── requirements.txt       # List of Python libraries
+├── setup.py               # Installation script (creates venv, installs deps)
+│
+├── static/                # Frontend assets (CSS, JS)
+├── templates/             # HTML templates
+│
+├── uploads/               # (Created by app) Stores user-uploaded .wav files
+├── generated_audio/       # (Created by app) Stores text-to-morse .wav files
+└── venv/                  # (Created by setup.py) Python virtual environment
+```
 
 ---
 
@@ -63,28 +73,23 @@ morse_app/ ├── app.py # Main Flask application (routes, file handling) ├
 
 This project includes a setup script to automate the installation process. You will need **Python 3.7+** installed on your system.
 
-1.  **Clone or Download:** Get all the project files into a single directory named `morse_app/`.
+1.  **Clone or Download:** Get all the project files into the root `m2t/` directory.
 2.  **Open Your Terminal:** Navigate into the project's root directory:
     ```sh
-    cd path/to/morse_app
+    cd path/to/m2t
     ```
 3.  **Run the Setup Script:**
-    * **On macOS/Linux:**
-        ```sh
-        python3 setup.py
-        ```
-    * **On Windows:**
-        ```sh
-        python setup.py
-        ```
+    ```shell
+    python setup.py
+    ```
 4.  **What the Script Does:**
-    * Checks if a virtual environment directory (`venv/`) already exists. If not, it creates one.
-    * Activates the virtual environment.
-    * Uses `pip` (from within the venv) to install all libraries listed in `requirements.txt`.
-    * Once dependencies are installed, it automatically starts the Flask server.
+    *   Checks if a virtual environment (`venv/`) exists. If not, it creates one.
+    *   Installs all required libraries from `requirements.txt` into the virtual environment.
+    *   Starts the Flask web server.
+    *   **Automatically opens the application** in your default web browser.
 
 5.  **Access the Application:**
-    Once the server is running, open your web browser and go to:
+    If your browser doesn't open automatically, you can access the running application at:
     **`http://127.0.0.1:5000`**
 
 To stop the server, press **`CTRL+C`** in your terminal.
@@ -93,24 +98,21 @@ To stop the server, press **`CTRL+C`** in your terminal.
 
 ## 📖 How to Use
 
-### To Generate Morse Code (Text-to-Morse)
-
-1.  Type your message (e.g., "HELLO WORLD") into the **"Enter Text"** box.
-2.  Click the **"Generate Audio"** button.
-3.  An audio player will appear, allowing you to listen to and download your generated `.wav` file.
-
 ### To Translate Morse Code (Morse-to-Text)
 
-1.  Under the **"Morse to Text"** section, click **"Choose File"** and select a `.wav` file from your computer.
-2.  Click the **"Translate Audio"** button.
-3.  The application will process the file (a spinner may appear for larger files).
+1.  The main "Morse to Text Decoder" is the first card on the page.
+2.  Click **"Choose File"** and select a `.wav` file from your computer.
+3.  Click the **"Translate Audio"** button.
 4.  Once processed, the results area will appear, showing:
-    * The name of your file.
-    * An audio player loaded with your file.
-    * A static waveform visualization of the audio.
-    * The **"Full Translated Text"** box (which will be empty initially).
-5.  Press **Play** on the audio player.
-6.  As the audio plays:
-    * A red "playhead" will move across the waveform.
-    * Decoded letters will flash in the "live display" box, synchronized with the audio.
-    * The **"Full Translated Text"** box will fill up live as the letters are decoded.
+    *   The **Detected Speed** in Words Per Minute (WPM).
+    *   An audio player for your file.
+    *   A waveform visualization.
+    *   The empty **"Full Translated Text"** box.
+5.  Press **Play** on the audio player to begin the live translation. As the audio plays, decoded letters will flash on the screen and the full translated text will build up in the summary box below.
+
+### To Generate Morse Code (for Testing)
+
+1.  Find the collapsible **"Text to Morse Generator"** section at the bottom of the page and click on it to expand it.
+2.  Type your message into the **"Enter Text"** box.
+3.  Click the **"Generate Audio"** button.
+4.  An audio player will appear, allowing you to listen to and download your generated `.wav` file.
