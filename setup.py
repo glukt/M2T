@@ -4,16 +4,66 @@ import os
 import venv
 import webbrowser
 import time
+import argparse
 
 # Define the name of the virtual environment directory
 VENV_DIR = "venv"
 
-def create_virtual_env():
+def find_python_version(version=None):
+    """Finds the Python executable for the specified version."""
+    if version is None:
+        # Try Python 3.12.7 first, then 3.12, then 3.13
+        versions_to_try = ["3.12.7", "3.12", "3.13"]
+    else:
+        versions_to_try = [version, version.split(".")[0] + "." + version.split(".")[1]]
+    
+    if sys.platform == "win32":
+        for v in versions_to_try:
+            try:
+                result = subprocess.run(
+                    ["py", f"-{v}", "--version"],
+                    capture_output=True,
+                    text=True,
+                    timeout=5
+                )
+                if result.returncode == 0:
+                    # Return the py launcher command with version spec
+                    return ["py", f"-{v}"]
+            except (subprocess.TimeoutExpired, FileNotFoundError):
+                continue
+        
+        # Fallback: try direct python commands
+        for cmd in ["python3.12", "python3.13", "python3"]:
+            try:
+                result = subprocess.run([cmd, "--version"], capture_output=True, text=True, timeout=5)
+                if result.returncode == 0:
+                    return [cmd]
+            except (subprocess.TimeoutExpired, FileNotFoundError):
+                continue
+    else:
+        # Unix-like systems
+        for v in versions_to_try:
+            for cmd in [f"python{v}", f"python3.{v.split('.')[1]}"]:
+                try:
+                    result = subprocess.run([cmd, "--version"], capture_output=True, text=True, timeout=5)
+                    if result.returncode == 0:
+                        return [cmd]
+                except (subprocess.TimeoutExpired, FileNotFoundError):
+                    continue
+    
+    return None
+
+def create_virtual_env(python_cmd=None):
     """Creates a virtual environment if it doesn't exist."""
     if not os.path.exists(VENV_DIR):
         print(f"Creating virtual environment in ./{VENV_DIR}...")
         try:
-            venv.create(VENV_DIR, with_pip=True)
+            if python_cmd:
+                # Use specific Python version
+                print(f"Using Python: {' '.join(python_cmd)}")
+                subprocess.check_call(python_cmd + ["-m", "venv", VENV_DIR])
+            else:
+                venv.create(VENV_DIR, with_pip=True)
             print("Virtual environment created successfully.")
         except Exception as e:
             print(f"Error creating virtual environment: {e}")
@@ -96,8 +146,34 @@ def run_application():
         print("\nServer stopped by user.")
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Setup M2T Morse Code Application")
+    parser.add_argument(
+        "--python",
+        "-p",
+        type=str,
+        help="Python version to use (e.g., '3.12.7', '3.12', '3.13'). Default: tries 3.12.7, then 3.12, then 3.13"
+    )
+    args = parser.parse_args()
+    
     print("--- Morse Code Application Setup ---")
-    create_virtual_env()
+    
+    # Find and use the appropriate Python version
+    python_cmd = find_python_version(args.python)
+    if python_cmd:
+        python_version_str = ' '.join(python_cmd)
+        print(f"Found Python: {python_version_str}")
+        # Verify version
+        try:
+            version_result = subprocess.run(python_cmd + ["--version"], capture_output=True, text=True)
+            if version_result.returncode == 0:
+                print(f"Python version: {version_result.stdout.strip()}")
+        except:
+            pass
+    else:
+        print("Warning: Could not find a specific Python version. Using system default.")
+        python_cmd = None
+    
+    create_virtual_env(python_cmd)
     install_requirements()
     print("--- Setup complete ---")
     run_application()
