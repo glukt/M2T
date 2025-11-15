@@ -270,7 +270,17 @@ document.addEventListener('DOMContentLoaded', () => {
         if (wavesurfer) wavesurfer.setPlaybackRate(speed);
     });
 
-    playPauseButton.addEventListener('click', () => { if (wavesurfer) wavesurfer.playPause(); });
+    playPauseButton.addEventListener('click', () => { 
+        if (wavesurfer) {
+            // Toggle play/pause
+            if (wavesurfer.isPlaying()) {
+                wavesurfer.pause();
+            } else {
+                // Resume playback from current position
+                wavesurfer.play();
+            }
+        }
+    });
     resetZoomButton.addEventListener('click', () => { if (wavesurfer) wavesurfer.zoom('auto'); });
 
     // --- CORE DECODE & WAVESURFER LOGIC ---
@@ -523,6 +533,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         
         wavesurfer.on('finish', () => {
+            playPauseButton.textContent = 'PLAY';
             stopWaterfallUpdate();
         });
         
